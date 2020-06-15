@@ -19,15 +19,15 @@ import java.util.Map;
 public class ClientProxy {
     int serverId;
     Map<Integer, Peer> peerMap;
-    Map<Integer, RaftClient> testClientMap;
+    Map<Integer, RaftClient> clientMap;
 
     public ClientProxy(int serverId, Map<Integer, Peer> peerMap) {
         this.peerMap = peerMap;
         this.serverId = serverId;
-        testClientMap = new HashMap<>();
+        clientMap = new HashMap<>();
         peerMap.forEach((k, v) -> {
             if (serverId != k) {
-                testClientMap.put(k, new RaftClient(v));
+                clientMap.put(k, new RaftClient(v));
             }
         });
     }

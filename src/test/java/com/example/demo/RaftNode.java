@@ -7,12 +7,16 @@
 package com.example.demo;
 
 import io.grpc.justtest.Peer;
+import io.grpc.justtest.VoteRequest;
+import io.grpc.justtest.VoteResponse;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author liubin01
@@ -20,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 public class RaftNode {
     public enum NodeState {
         STATE_FOLLOWER,
-        STATE_PRE_CANDIDATE,
         STATE_CANDIDATE,
         STATE_LEADER
     }
@@ -54,4 +57,35 @@ public class RaftNode {
 
         }, 2, 3, TimeUnit.MILLISECONDS);
     }
+
+    private Runnable hearBeater = () -> {
+        if (state == NodeState.STATE_LEADER) {
+            return;
+        }
+    };
+
+    private Runnable election = () -> {
+        if (state != NodeState.STATE_LEADER) {
+            return;
+        }
+        this.currentTerm++;
+        VoteRequest voteRequest = VoteRequest.newBuilder()
+                .setTerm(currentTerm)
+                .setServerId(serverId)
+                .setLastLogTerm(0)
+                .setLastLogIndex(0)
+                .build();
+        int voteCount = 1;
+        for (Map.Entry<Integer, RaftClient> entry : proxy.clientMap.entrySet()) {
+            RaftClient v = entry.getValue();
+            try {
+                VoteResponse response = v.vote(voteRequest).get(10, TimeUnit.MILLISECONDS);
+                if (response.getGranted()) {
+                    voteCount++;
+                }
+            } catch (InterruptedException | TimeoutException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 }

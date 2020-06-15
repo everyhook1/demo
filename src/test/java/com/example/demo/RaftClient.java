@@ -6,6 +6,7 @@
  */
 package com.example.demo;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.justtest.GreeterGrpc;
@@ -22,11 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RaftClient {
     private final ManagedChannel channel;
-    private final GreeterGrpc.GreeterBlockingStub blockingStub;
-
-    public void testChannel() {
-        log.info("当前连接状态->{}", this.channel.getState(false));
-    }
+    private final GreeterGrpc.GreeterFutureStub blockingStub;
 
     public RaftClient(Peer peer) {
         //usePlaintext表示明文传输，否则需要配置ssl
@@ -34,16 +31,14 @@ public class RaftClient {
 
         channel = ManagedChannelBuilder.forAddress(peer.getHost(), peer.getPort()).usePlaintext().build();
         //存根
-        blockingStub = GreeterGrpc.newBlockingStub(channel);
+        blockingStub = GreeterGrpc.newFutureStub(channel);
     }
 
     public void shutdown() throws InterruptedException {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
-
-    public VoteResponse vote() {
-        VoteRequest voteRequest = VoteRequest.newBuilder().build();
+    public ListenableFuture<VoteResponse> vote(VoteRequest voteRequest) {
         return blockingStub.vote(voteRequest);
     }
 }
