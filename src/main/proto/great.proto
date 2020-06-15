@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.justtest";
+option java_outer_classname = "JustTestProto";
+option objc_class_prefix = "WY";
+
+package onlytest;
+
+
+enum ResCode {
+    RES_CODE_SUCCESS = 0;
+    RES_CODE_FAIL = 1;
+    RES_CODE_NOT_LEADER = 2;
+}
+
+enum EntryType {
+    ENTRY_TYPE_DATA = 0;
+    ENTRY_TYPE_CONFIGURATION = 1;
+}
+
+message Peer {
+    string host = 1;
+    uint32 port = 2;
+    uint32 serverId = 3;
+}
+
+message LogMetaData {
+    uint64 current_term = 1;
+    uint32 voted_for = 2;
+    uint64 first_log_index = 3;
+    uint64 commit_index = 4;
+}
+
+message VoteRequest {
+    uint32 server_id = 1; // 请求选票的候选人的 Id
+    uint64 term = 2; // 候选人的任期号
+    uint64 last_log_term = 3; // 候选人的最后日志条目的任期号
+    uint64 last_log_index = 4; // 候选人最后日志条目的索引值
+};
+
+message VoteResponse {
+    uint64 term = 1; // 当前任期号，以便于候选人去更新自己的任期号
+    bool granted = 2; // 候选人赢得了此张选票时为真
+};
+
+//定义服务
+service Greeter {
+    rpc Vote (VoteRequest) returns (VoteResponse) {
+    }
+}
