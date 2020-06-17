@@ -17,7 +17,7 @@ import io.grpc.stub.StreamObserver;
 //实现服务接口的类
 public class GreeterImpl extends GreeterGrpc.GreeterImplBase {
 
-    private RaftNode raftNode;
+    private final RaftNode raftNode;
 
     public GreeterImpl(RaftNode raftNode) {
         this.raftNode = raftNode;
@@ -26,6 +26,13 @@ public class GreeterImpl extends GreeterGrpc.GreeterImplBase {
     public void vote(VoteRequest request,
                      StreamObserver<VoteResponse> responseObserver) {
         VoteResponse voteResponse = VoteResponse.newBuilder().build();
+        if (request.getTerm() < raftNode.getCurrentTerm()) {
+            voteResponse.toBuilder().setGranted(false).build();
+        } else {
+            if (raftNode.getVotedFor() == 0 || raftNode.getVotedFor() == request.getServerId()) {
+
+            }
+        }
         responseObserver.onNext(voteResponse);
         responseObserver.onCompleted();
     }
