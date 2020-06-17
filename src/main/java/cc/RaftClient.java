@@ -4,7 +4,7 @@
  * Copyright 2020 fenbi.com. All rights reserved.
  * FENBI.COM PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
-package com.example.demo;
+package cc;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ManagedChannel;
